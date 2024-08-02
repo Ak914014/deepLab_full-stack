@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+// import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 const initialState = {
   user: null,
@@ -23,7 +25,7 @@ export const login = createAsyncThunk('auth/login', async (credentials) => {
   return response.data.token;
 });
 
-export const authSlice = createSlice({
+const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {

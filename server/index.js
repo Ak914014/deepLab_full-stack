@@ -17,6 +17,7 @@ const port = 3100;
 app.use(cors());
 app.use(express.json());
 
+// Set up multer for file uploads
 const upload = multer({
   dest: 'uploads/',
   limits: { fileSize: 5 * 1024 * 1024 },
@@ -33,8 +34,7 @@ const upload = multer({
   }
 });
 
-let models = {};
-
+// Fetch and initialize models with retry logic
 const fetchModelWithRetry = async (base, retries = 3) => {
   for (let i = 0; i < retries; i++) {
     try {
@@ -49,6 +49,7 @@ const fetchModelWithRetry = async (base, retries = 3) => {
     }
   }
 };
+let models = {};
 
 const initializeModels = async () => {
   const modelNames = ['pascal', 'cityscapes', 'ade20k'];
@@ -60,7 +61,7 @@ const initializeModels = async () => {
 
 initializeModels();
 
-console.log("mongoDB::", process.env.MONGO_DB);
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_DB, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -70,6 +71,7 @@ mongoose.connect(process.env.MONGO_DB, {
   console.error('Error connecting to MongoDB', error);
 });
 
+// Define the User schema and model
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -79,9 +81,13 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+// Authentication middleware
 const authMiddleware = (req, res, next) => {
-  const token = req.header('Authorization').replace('Bearer ', '');
-  if (!token) return res.status(401).json({ message: 'Access denied, token missing!' });
+  const authHeader = req.header('Authorization');
+  if (!authHeader) {
+    return res.status(401).json({ message: 'Access denied, token missing!' });
+  }
+  const token = authHeader.replace('Bearer ', '');
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
@@ -91,11 +97,13 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+// Signup route
 app.post('/signup', upload.single('image'), [
   body('name').not().isEmpty(),
   body('email').isEmail(),
   body('password').isLength({ min: 6 })
 ], async (req, res) => {
+  console.log('Signup endpoint hit');
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -124,6 +132,7 @@ app.post('/signup', upload.single('image'), [
   }
 });
 
+// Login route
 app.post('/login', [
   body('email').isEmail(),
   body('password').exists()
@@ -148,6 +157,7 @@ app.post('/login', [
   res.json({ token });
 });
 
+// Image upload and segmentation route
 app.post('/upload', authMiddleware, upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).send('No file uploaded.');

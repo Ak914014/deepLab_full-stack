@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import { saveAs } from "file-saver";
-import Legend from "./Lengend"
+import Legend from "./Lengend";
 
 /**
  * Form component for image upload, segmentation, and display.
@@ -26,7 +26,7 @@ const Form = ({ setImage }) => {
     if (file) {
       setSelectedFile(file);
       setUploadedImage(URL.createObjectURL(file));
-      setErrorMessage(""); 
+      setErrorMessage("");
     }
   };
 
@@ -49,6 +49,7 @@ const Form = ({ setImage }) => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming token is stored in localStorage
           },
         }
       );
@@ -81,10 +82,10 @@ const Form = ({ setImage }) => {
   /**
    * Draws the segmentation map on the canvas.
    * @param {Object} data - Segmentation data.
-   * @param {Array} data.segmentationMap - Segmentation map.
+   * @param {Array} data.segmentationMap - Segmentation map data.
    * @param {number} data.height - Image height.
    * @param {number} data.width - Image width.
-   * @param {Object} data.legend - Legend data.
+   * @param {Object} data.legend - Color legend for the segmentation map.
    */
   const drawSegmentationMap = ({ segmentationMap, height, width, legend }) => {
     const canvas = canvasRef.current;

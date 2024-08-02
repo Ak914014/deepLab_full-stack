@@ -56,6 +56,10 @@ const AuthPopup = () => {
       formData.append('password', password);
       formData.append('image', image);
 
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
       try {
         await dispatch(signup(formData)).unwrap();
         setImage(null);
@@ -109,7 +113,7 @@ const AuthPopup = () => {
         >
           <div
             className="bg-white p-8 rounded shadow-lg relative w-full max-w-md"
-            onClick={(e) => e.stopPropagation()} // Prevent click event from bubbling up
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
