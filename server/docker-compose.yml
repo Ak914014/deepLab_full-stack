@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build: .
+    container_name: deeplab
+    ports:
+      - "3100:3100"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_DB=mongodb://admin:password@mongo:27017/
+
+volumes:
+  mongo-data:
