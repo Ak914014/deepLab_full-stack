@@ -6,6 +6,7 @@ const { load } = require('@tensorflow-models/deeplab');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
@@ -13,6 +14,8 @@ require('dotenv').config();
 
 const app = express();
 const port = 3100;
+const uri = 'mongodb+srv://ajay:ajay@deeplab.fc3g6eb.mongodb.net/?retryWrites=true&w=majority&appName=deeplabr';
+const client = new MongoClient(uri);
 
 app.use(cors());
 app.use(express.json());
@@ -183,6 +186,22 @@ app.get('/login-history', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Error fetching login history' });
   }
 });
+
+app.delete('/login-history/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await LoginHistory.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 1) {
+      res.status(200).send({ message: 'History deleted successfully' });
+    } else {
+      res.status(404).send({ message: 'History not found' });
+    }
+  } catch (error) {
+    res.status(500).send({ message: 'Internal Server Error' });
+  }
+});
+
+
 
 // implement logout route also
 /** 

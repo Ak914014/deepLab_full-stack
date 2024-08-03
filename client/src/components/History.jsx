@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchHistory } from "../redux/historySlice";
+import { fetchHistory, deleteHistory } from "../redux/historySlice";
 import { motion } from "framer-motion";
 
 const History = ({ onImageClick }) => {
@@ -14,6 +14,10 @@ const History = ({ onImageClick }) => {
     }
   }, [status, dispatch]);
 
+  const handleDelete = (id) => {
+    dispatch(deleteHistory(id));
+  };
+
   return (
     <div className="flex flex-col">
       <div className="mb-2 bg-yellow-500 p-5 rounded-xl">
@@ -24,8 +28,8 @@ const History = ({ onImageClick }) => {
         <motion.div
          animate={{
                   transition: { duration: 1 },
-                  x: 10,
-                  y: 20,
+                  x: 5,
+                  y: 30,
                   scale: 1,
                   rotate: 0,
                 }}
@@ -36,11 +40,20 @@ const History = ({ onImageClick }) => {
             history.map((item, index) => (
               <div
                 key={index}
-                className="flex gap-1 hover:bg-yellow-500 hover:text-white py-2 rounded-lg pl-2 cursor-pointer"
+                className="flex gap-1 items-center hover:bg-yellow-500 hover:text-white py-2 rounded-lg pl-2 cursor-pointer"
                 onClick={() => onImageClick(item)}
               >
                 <h3>{item.userName}</h3>
                 <h3>{new Date(item.loginTime).toLocaleString()}</h3>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(item._id);
+                  }}
+                  className="ml-auto bg-red-600 text-white py-1 px-2 rounded hover:bg-red-800"
+                >
+                  Delete
+                </button>
               </div>
             ))
           )}

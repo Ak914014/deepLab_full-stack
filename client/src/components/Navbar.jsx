@@ -48,12 +48,12 @@ const Navbar = () => {
         {user && (
           <>
             <div className="flex items-center space-x-2 cursor-pointer" onClick={togglePopup}>
+              <span className='font-bold text-xl'>{user.name}</span> 
               <img
                 src={user.imagePath || 'https://e7.pngegg.com/pngimages/340/946/png-clipart-avatar-user-computer-icons-software-developer-avatar-child-face-thumbnail.png'}
                 alt="User Avatar"
                 className="w-10 h-10 rounded-full border"
               />
-              <span>{user.name}</span>
             </div>
             {isPopupVisible && (
               <div
