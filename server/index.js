@@ -132,6 +132,15 @@ app.post('/signup', upload.single('image'), [
   }
 });
 
+// Define the LoginHistory schema and model
+const loginHistorySchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userName: { type: String, required: true },
+  loginTime: { type: Date, default: Date.now }
+});
+
+const LoginHistory = mongoose.model('LoginHistory', loginHistorySchema);
+
 // Login route
 app.post('/login', [
   body('email').isEmail(),
@@ -154,9 +163,33 @@ app.post('/login', [
   }
 
   const token = jwt.sign({ _id: user._id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+  // Save login history
+  const loginHistory = new LoginHistory({
+    userId: user._id,
+    userName: user.name
+  });
+  await loginHistory.save();
+
   res.json({ token });
 });
 
+// New endpoint to fetch login history
+app.get('/login-history', authMiddleware, async (req, res) => {
+  try {
+    const history = await LoginHistory.find().populate('userId').sort({ loginTime: -1 });
+    res.json(history);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching login history' });
+  }
+});
+
+// implement logout route also
+/** 
+ * app.post('/logout', (req, res) => {
+ * 
+ * });
+ */
 // Image upload and segmentation route
 app.post('/upload', authMiddleware, upload.single('image'), async (req, res) => {
   if (!req.file) {

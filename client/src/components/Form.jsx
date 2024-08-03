@@ -3,36 +3,25 @@ import axios from "axios";
 import { saveAs } from "file-saver";
 import Legend from "./Lengend";
 
-/**
- * Form component for image upload, segmentation, and display.
- * @param {Object} props - Component props.
- * @param {Function} props.setImage - Function to set the segmented image URL.
- * @returns {JSX.Element} Form component.
- */
-const Form = ({ setImage }) => {
+const Form = ({ setImage, setHistory }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [canvasHasImage, setCanvasHasImage] = useState(false);
   const [legend, setLegend] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [imageName, setImageName] = useState("");
   const canvasRef = useRef(null);
 
-  /**
-   * Handles image file selection.
-   * @param {Object} e - Event object.
-   */
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
       setUploadedImage(URL.createObjectURL(file));
+      setImageName(file.name);
       setErrorMessage("");
     }
   };
 
-  /**
-   * Handles image upload and segmentation.
-   */
   const handleImageUpload = async () => {
     if (!selectedFile) {
       setErrorMessage("No image selected for upload.");
@@ -49,21 +38,23 @@ const Form = ({ setImage }) => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming token is stored in localStorage
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
       drawSegmentationMap(response.data);
-      setErrorMessage(""); // Clear error message on successful upload
+      setErrorMessage("");
+      // Add history entry
+      setHistory(prevHistory => [
+        ...prevHistory,
+        { userName: localStorage.getItem("userName"), imageName: imageName }
+      ]);
     } catch (error) {
       console.error("Error uploading image:", error);
-      setErrorMessage("Error uploading image.");
+      setErrorMessage("");
     }
   };
 
-  /**
-   * Handles saving the segmented image.
-   */
   const handleSaveImage = () => {
     if (!canvasHasImage) {
       setErrorMessage("No segmented image to save.");
@@ -75,18 +66,10 @@ const Form = ({ setImage }) => {
       canvas.toBlob((blob) => {
         saveAs(blob, "segmented_image.png");
       });
-      setErrorMessage(""); // Clear error message on successful save
+      setErrorMessage("");
     }
   };
 
-  /**
-   * Draws the segmentation map on the canvas.
-   * @param {Object} data - Segmentation data.
-   * @param {Array} data.segmentationMap - Segmentation map data.
-   * @param {number} data.height - Image height.
-   * @param {number} data.width - Image width.
-   * @param {Object} data.legend - Color legend for the segmentation map.
-   */
   const drawSegmentationMap = ({ segmentationMap, height, width, legend }) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -117,19 +100,19 @@ const Form = ({ setImage }) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full font-bold">
       <div className="flex flex-col items-center p-4">
         <div className="mt-2 flex gap-5 flex-row">
           <input type="file" accept="image/*" onChange={handleImageChange} />
           <button
             onClick={handleImageUpload}
-            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-black"
           >
             Upload Image
           </button>
           <button
             onClick={handleSaveImage}
-            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-black"
           >
             Download Segment Image
           </button>
@@ -155,7 +138,7 @@ const Form = ({ setImage }) => {
             </div>
           </div>
           <div>
-            <h1 className="text-2xl">Segment Image:</h1>
+            <h1 className="text-2xl mt-2">Segment Image:</h1>
             <canvas
               ref={canvasRef}
               width="400"
