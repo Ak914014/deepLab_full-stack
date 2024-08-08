@@ -29,7 +29,7 @@ const upload = multer({
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = fileTypes.test(file.mimetype);
 
-    if (extname && mimetype) {
+    if (extname && mimetype) { 
       return cb(null, true);
     } else {
       cb('Error: File upload only supports images!');
