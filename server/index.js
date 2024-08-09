@@ -14,8 +14,7 @@ require('dotenv').config();
 
 const app = express();
 const port = 3100;
-const uri = 'mongodb+srv://ajay:ajay@deeplab.fc3g6eb.mongodb.net/?retryWrites=true&w=majority&appName=deeplabr';
-const client = new MongoClient(uri);
+
 
 app.use(cors());
 app.use(express.json());
